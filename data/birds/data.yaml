@@ -1,0 +1,7 @@
+
+train: /content/birds_dataset/train/images  
+val: /content/birds_dataset/valid/images    
+test: /content/birds_dataset/test/images  
+ 
+nc: 1                                       
+names: ['bird']                            
