@@ -1,33 +1,30 @@
-import argparse
-import torch
+import sys
 from pathlib import Path
-from val import run  # Import YOLOv5 validation function
 
-def parse_opt():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, choices=['drone', 'bird', 'aeroplane'], required=True,
-                        help='Dataset to validate: drone, bird, or aeroplane')
-    parser.add_argument('--weights', type=str, default=None, help='Path to model weights (overrides default)')
-    parser.add_argument('--img-size', type=int, default=640, help='Image size for validation')
-    parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
-    parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu',
-                        help='Device to validate on')
-    opt = parser.parse_args()
-    return opt
+# Automatically add the directory where 'val.py' is located to sys.path
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[0]  # Root directory where val.py is located
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))
 
-def main(opt):
-    dataset_name = opt.dataset
-    dataset_path = f'data/{dataset_name}.yaml'  # Path to dataset YAML file
-    model_weights = opt.weights if opt.weights else f'weights/{dataset_name}.pt'  # Select model weights
-    
-    run(data=dataset_path,
-        weights=model_weights,
-        imgsz=opt.img_size,
-        batch_size=opt.batch_size,
-        device=opt.device)
-    
-    print(f'Validation completed for {dataset_name} dataset using {model_weights}')
+# Now import YOLOv5 modules
+import torch
+from models.common import DetectMultiBackend
+from utils.torch_utils import select_device
 
-if __name__ == '__main__':
-    opt = parse_opt()
-    main(opt)
+# Set device
+device = select_device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# Model paths (adjust if needed)
+model_paths = {
+    "drone": "modelspt/drone.pt",
+    "bird": "modelspt/bird.pt",
+    "aeroplane": "modelspt/aeroplane.pt"
+}
+
+# Load models
+models = {name: DetectMultiBackend(path, device=device) for name, path in model_paths.items()}
+
+# Print model summaries
+for name, model in models.items():
+    print(f"{name} model loaded successfully!")
